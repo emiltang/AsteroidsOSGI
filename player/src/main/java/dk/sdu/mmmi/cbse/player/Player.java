@@ -7,11 +7,7 @@
  */
 package dk.sdu.mmmi.cbse.player;
 
-import dk.sdu.mmmi.cbse.api.ICollideAble;
-import dk.sdu.mmmi.cbse.api.ICollisionAbility;
-import dk.sdu.mmmi.cbse.api.IEntity;
-import dk.sdu.mmmi.cbse.api.IMoveAbility;
-import dk.sdu.mmmi.cbse.api.IMoveAble;
+import dk.sdu.mmmi.cbse.api.*;
 
 /**
  * @author Emil
@@ -28,9 +24,9 @@ public class Player implements IMoveAble, IEntity, ICollideAble {
     private int healthPoints;
 
     Player(final String asset,
-            final int healthPoints,
-            IMoveAbility moveAbility,
-            ICollisionAbility collisionAbility) {
+           final int healthPoints,
+           final IMoveAbility moveAbility,
+           final ICollisionAbility collisionAbility) {
         this.asset = asset;
         this.healthPoints = healthPoints;
         this.moveAbility = moveAbility;

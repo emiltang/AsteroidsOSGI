@@ -7,10 +7,13 @@
  */
 package com.sdu.mmmi.cbse.core;
 
+import dk.sdu.mmmi.cbse.api.IInputService;
+import org.osgi.service.component.annotations.Component;
+
 import static com.badlogic.gdx.Gdx.input;
 import static com.badlogic.gdx.Input.Keys;
-import dk.sdu.mmmi.cbse.api.IInputService;
 
+@Component(service = IInputService.class)
 public class InputService implements IInputService {
 
     @Override

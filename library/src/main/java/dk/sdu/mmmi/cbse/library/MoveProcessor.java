@@ -7,23 +7,23 @@
  */
 package dk.sdu.mmmi.cbse.library;
 
-import dk.sdu.mmmi.cbse.api.*;
+import dk.sdu.mmmi.cbse.api.IMoveAbility;
+import dk.sdu.mmmi.cbse.api.IMoveAble;
+import dk.sdu.mmmi.cbse.api.IProcessor;
+import dk.sdu.mmmi.cbse.api.IWorld;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 import static java.lang.Math.*;
 
 /**
  * @author Emil
  */
+@Component(service = IProcessor.class)
 public class MoveProcessor implements IProcessor {
 
+    @Reference
     private IWorld world;
-
-    public void setWorld(IWorld world) {
-        this.world = world;
-    }
-
-    public void removeWorld(IWorld world) {
-        this.world = null;
-    }
 
     @Override
     public void process(float dt) {

@@ -8,59 +8,73 @@
 package com.sdu.mmmi.cbse.core;
 
 import com.badlogic.gdx.ApplicationListener;
-import com.badlogic.gdx.Gdx;
-import static com.badlogic.gdx.Gdx.graphics;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import static com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration.getDesktopDisplayMode;
-import com.badlogic.gdx.graphics.FPSLogger;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-
-import static com.badlogic.gdx.math.MathUtils.radDeg;
 import dk.sdu.mmmi.cbse.api.IPlugin;
 import dk.sdu.mmmi.cbse.api.IProcessor;
 import dk.sdu.mmmi.cbse.api.IWorld;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.badlogic.gdx.Gdx.*;
+import static com.badlogic.gdx.Input.Keys;
+import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
+import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_BUFFER_BIT;
+import static com.badlogic.gdx.math.MathUtils.radDeg;
+import static org.osgi.service.component.annotations.ReferenceCardinality.MULTIPLE;
+import static org.osgi.service.component.annotations.ReferencePolicy.DYNAMIC;
 
 /**
  * @author Emil
  */
+@Component(immediate = true)
 public class GameScreen implements ApplicationListener {
 
-    private AssetManager assetManager;
+    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
+    private List<IPlugin> plugins = new ArrayList<>();
+
+    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
+    private List<IProcessor> processors = new ArrayList<>();
+
+    @Reference
+    private ILocalAssetManager assetManager;
+
+    @Reference
     private IWorld world;
+
     private SpriteBatch batch;
     private Viewport viewport;
-    private Texture bg;
-    private FPSLogger fpsLogger;
-    private final List<IPlugin> plugins = new ArrayList<>();
-    private final List<IProcessor> processors = new ArrayList<>();
 
-    public GameScreen() {
-        System.out.println("Starting game");
-        init();
-    }
-
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    public final void init() {
+    @Activate
+    public void init() {
         LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
         cfg.title = "my-gdx-game";
-        cfg.setFromDisplayMode(getDesktopDisplayMode());
+        cfg.useGL30 = true;
         new LwjglApplication(this, cfg);
     }
 
     @Override
     public void create() {
-        assetManager = new AssetManager();
         viewport = new FitViewport(IWorld.WIDTH, IWorld.HEIGHT);
         batch = new SpriteBatch();
-        bg = new Texture("bg5.jpg");
-        fpsLogger = new FPSLogger();
+
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("bg5.jpg")) {
+            assetManager.loadAsset("bg", stream.readAllBytes());
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
         viewport.apply(true);
         batch.setProjectionMatrix(viewport.getCamera().combined);
     }
@@ -73,29 +87,48 @@ public class GameScreen implements ApplicationListener {
     @Override
     public void render() {
         // Update processors
-        processors.forEach(p -> p.process(graphics.getDeltaTime()));
+        processors.forEach(processor -> processor.process(graphics.getDeltaTime()));
 
-        Gdx.gl.glClearColor(0, 0, 0, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        gl.glClearColor(0, 0, 0, 1);
+        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         batch.begin();
-        batch.draw(bg, 0, 0, IWorld.WIDTH, IWorld.HEIGHT);
+        batch.draw(assetManager.getAsset("bg"), 0, 0, IWorld.WIDTH, IWorld.HEIGHT);
         world.getEntities().forEach(e -> {
             Texture t = assetManager.getAsset(e.getAsset());
-            batch.draw(
-                    t,
-                    e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2,
-                    t.getWidth() / 2, t.getHeight() / 2,
-                    t.getWidth(), t.getHeight(),
-                    1, 1,
-                    e.getRotation() * radDeg,
-                    0, 0,
-                    t.getWidth(), t.getHeight(),
-                    false, false
-            );
+            if (t != null) {
+                batch.draw(
+                        t,
+                        e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2,
+                        t.getWidth() / 2, t.getHeight() / 2,
+                        t.getWidth(), t.getHeight(),
+                        1, 1,
+                        e.getRotation() * radDeg,
+                        0, 0,
+                        t.getWidth(), t.getHeight(),
+                        false, false
+                );
+            }
         });
         batch.end();
-        fpsLogger.log();
+
+        if (input.isKeyJustPressed(Keys.T)) {
+            world.getEntities().forEach(iEntity -> System.out.println(
+                    "id: " + iEntity.hashCode()
+                            + "\nname: " + iEntity.getAsset()
+                            + "\nx: " + iEntity.getX()
+                            + "\ny: " + iEntity.getX()
+                            + "\ntype: " + iEntity.getClass()
+            ));
+//            Collection<String> aseets = assetManager.getAssets();
+//            if (aseets.isEmpty()) {
+//                System.out.println("no assets");
+//            } else {
+//                aseets.forEach(System.out::println);
+//            }
+            processors.forEach(System.out::println);
+            plugins.forEach(System.out::println);
+        }
     }
 
     @Override
@@ -108,34 +141,7 @@ public class GameScreen implements ApplicationListener {
 
     @Override
     public void dispose() {
-        plugins.forEach(IPlugin::stop);
-        bg.dispose();
+        batch.dispose();
         assetManager.dispose();
-    }
-
-    public void addPlugin(IPlugin plugin) {
-        plugins.add(plugin);
-        plugin.start();
-    }
-
-    public void removePlugin(IPlugin plugin) {
-        plugins.remove(plugin);
-        plugin.start();
-    }
-
-    public void addProcessor(IProcessor processor) {
-        processors.add(processor);
-    }
-
-    public void removeProcessor(IProcessor processor) {
-        processors.remove(processor);
-    }
-
-    public void setWorld(IWorld world) {
-        this.world = world;
-    }
-
-    public void removeWorld(IWorld world) {
-        this.world = null;
     }
 }

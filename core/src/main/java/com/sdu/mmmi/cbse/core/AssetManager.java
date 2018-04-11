@@ -7,35 +7,52 @@
  */
 package com.sdu.mmmi.cbse.core;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import dk.sdu.mmmi.cbse.api.IAssetManager;
+import org.osgi.service.component.annotations.Component;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * @author Emil
  */
-public class AssetManager implements IAssetManager {
+@Component(service = {IAssetManager.class, ILocalAssetManager.class}, immediate = true)
+public class AssetManager implements IAssetManager, ILocalAssetManager {
 
-    private static final Map<String, Texture> ASSETS = new HashMap<>();
+    private final Map<String, Texture> assets = new HashMap<>();
 
-    Texture getAsset(String key) {
-        return ASSETS.get(key);
+    @Override
+    public Texture getAsset(String key) {
+        return assets.get(key);
     }
 
     @Override
-    public void loadAsset(String key, String path) {
-        ASSETS.put(key, new Texture(path));
+    public void loadAsset(String key, byte[] data) {
+        Gdx.app.postRunnable(() -> assets.put(key, new Texture(new Pixmap(data, 0, data.length))));
+        System.out.println("loading asset: " + key + " length: " + data.length);
     }
 
     @Override
     public void unloadAsset(String key) {
-        ASSETS.get(key).dispose();
-        ASSETS.remove(key);
+        assets.remove(key);
     }
 
-    void dispose() {
-        ASSETS.values().forEach(Texture::dispose);
+    @Override
+    public boolean isLoaded(String key) {
+        return assets.containsKey(key) && assets.get(key) != null;
+    }
+
+    @Override
+    public void dispose() {
+        assets.values().forEach(Texture::dispose);
+    }
+
+    @Override
+    public Collection<String> getAssets() {
+        return assets.keySet();
     }
 }

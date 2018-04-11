@@ -15,13 +15,14 @@ package dk.sdu.mmmi.cbse.api;
 public interface IAssetManager {
 
     /**
-     * @param key  Asset name
-     * @param path Asset internal path
+     * @param key Asset name
      */
-    void loadAsset(String key, String path);
+    void loadAsset(String key, byte[] data);
 
     /**
      * @param key Asset name
      */
     void unloadAsset(String key);
+
+    boolean isLoaded(String key);
 }

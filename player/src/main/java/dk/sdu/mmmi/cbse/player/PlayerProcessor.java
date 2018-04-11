@@ -7,15 +7,23 @@
  */
 package dk.sdu.mmmi.cbse.player;
 
-import dk.sdu.mmmi.cbse.api.*;
+import dk.sdu.mmmi.cbse.api.IInputService;
 import dk.sdu.mmmi.cbse.api.IInputService.Key;
+import dk.sdu.mmmi.cbse.api.IProcessor;
+import dk.sdu.mmmi.cbse.api.IWorld;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Emil
  */
+@Component(service = IProcessor.class, immediate = true)
 public class PlayerProcessor implements IProcessor {
 
+    @Reference
     private IWorld world;
+
+    @Reference
     private IInputService inputService;
 
     @Override

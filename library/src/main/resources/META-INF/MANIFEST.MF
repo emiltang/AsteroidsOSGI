@@ -1,2 +1,0 @@
-Bundle-ActivationPolicy: lazy
-Service-Component:  META-INF/processor.xml, META-INF/world.xml

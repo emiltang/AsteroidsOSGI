@@ -3,3 +3,6 @@ assembly/
 nbactions.xml
 ~*
 *.jar
+out/
+.idea/
+*.iml

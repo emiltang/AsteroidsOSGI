@@ -7,9 +7,18 @@
  */
 package dk.sdu.mmmi.cbse.player;
 
-import dk.sdu.mmmi.cbse.api.*;
+import dk.sdu.mmmi.cbse.api.IAssetManager;
+import dk.sdu.mmmi.cbse.api.IPlugin;
+import dk.sdu.mmmi.cbse.api.IWorld;
 import dk.sdu.mmmi.cbse.library.CollisionAbility;
 import dk.sdu.mmmi.cbse.library.MoveAbility;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
+
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import static java.lang.Math.PI;
@@ -18,6 +27,7 @@ import static java.lang.Math.random;
 /**
  * @author Emil
  */
+@Component(service = IPlugin.class, immediate = true)
 public class PlayerPlugin implements IPlugin {
 
     private static final String ASSET_KEY = "player";
@@ -30,45 +40,35 @@ public class PlayerPlugin implements IPlugin {
     private static final int DAMAGE = 0;
     private static final int HIT_RADIUS = 100;
 
+    @Reference
     private IAssetManager assetManager;
+    @Reference
     private IWorld world;
 
     @Override
+    @Activate
     public void start() {
-        System.out.println("Starting player plugin");
-        assetManager.loadAsset(ASSET_KEY, ASSET_PATH);
-        Player player = new Player(
-                ASSET_KEY,
-                HEALTH_POINTS,
+        Player player = new Player(ASSET_KEY, HEALTH_POINTS,
                 new MoveAbility(ACCELERATION, DECELERATION, MAX_SPEED, ROTATION_SPEED),
-                new CollisionAbility(DAMAGE, HIT_RADIUS)
-        );
+                new CollisionAbility(DAMAGE, HIT_RADIUS));
+
         player.setX(IWorld.WIDTH / 2);
         player.setY(IWorld.HEIGHT / 2);
         player.setRotation((float) (random() * 2 * PI));
         world.addEntity(player);
+
+        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ASSET_PATH)) {
+            assetManager.loadAsset(ASSET_KEY, stream.readAllBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
+    @Deactivate
     public void stop() {
         assetManager.unloadAsset(ASSET_KEY);
         List<Player> entities = world.getEntities(Player.class);
         world.removeEntities(entities);
-    }
-
-    public void setAssetManager(IAssetManager assetManager) {
-        this.assetManager = assetManager;
-    }
-
-    public void setWorld(IWorld world) {
-        this.world = world;
-    }
-
-    public void removeAssetManager(IAssetManager assetManager) {
-        this.assetManager = null;
-    }
-
-    public void removeWorld(IWorld world) {
-        this.world = null;
     }
 }

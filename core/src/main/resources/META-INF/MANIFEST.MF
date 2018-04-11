@@ -1,2 +1,0 @@
-Bundle-ActivationPolicy: lazy
-Service-Component: META-INF/core.xml, META-INF/activator.xml
