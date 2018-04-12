@@ -10,16 +10,13 @@ package com.sdu.mmmi.cbse.core;
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import dk.sdu.mmmi.cbse.api.IPlugin;
 import dk.sdu.mmmi.cbse.api.IProcessor;
 import dk.sdu.mmmi.cbse.api.IWorld;
-import org.osgi.service.component.annotations.Activate;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,9 +28,6 @@ import static com.badlogic.gdx.Input.Keys;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_BUFFER_BIT;
 import static com.badlogic.gdx.math.MathUtils.radDeg;
-import static org.osgi.service.component.annotations.ReferenceCardinality.MULTIPLE;
-import static org.osgi.service.component.annotations.ReferencePolicy.DYNAMIC;
-import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 /**
  * @author Emil
@@ -41,10 +35,18 @@ import static org.osgi.service.component.annotations.ReferencePolicyOption.GREED
 @Component(immediate = true)
 public class GameScreen implements ApplicationListener {
 
-    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = GREEDY)
+    @Reference(
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY
+    )
     private volatile List<IPlugin> plugins = new CopyOnWriteArrayList<>();
 
-    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = GREEDY)
+    @Reference(
+            cardinality = ReferenceCardinality.MULTIPLE,
+            policy = ReferencePolicy.DYNAMIC,
+            policyOption = ReferencePolicyOption.GREEDY
+    )
     private volatile List<IProcessor> processors = new CopyOnWriteArrayList<>();
 
     @Reference
@@ -58,7 +60,7 @@ public class GameScreen implements ApplicationListener {
 
     @Activate
     public void init() {
-        LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
+        var cfg = new LwjglApplicationConfiguration();
         cfg.title = "my-gdx-game";
         cfg.useGL30 = true;
         new LwjglApplication(this, cfg);
@@ -71,8 +73,8 @@ public class GameScreen implements ApplicationListener {
 
         try (InputStream stream = getClass().getClassLoader().getResourceAsStream("bg5.jpg")) {
             assetManager.loadAsset("bg", stream.readAllBytes());
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
         viewport.apply(true);
@@ -94,18 +96,18 @@ public class GameScreen implements ApplicationListener {
 
         batch.begin();
         batch.draw(assetManager.getAsset("bg"), 0, 0, IWorld.WIDTH, IWorld.HEIGHT);
-        world.getEntities().forEach(e -> {
-            Texture t = assetManager.getAsset(e.getAsset());
-            if (t != null) {
+        world.getEntities().forEach(entity -> {
+            var texture = assetManager.getAsset(entity.getAsset());
+            if (texture != null) {
                 batch.draw(
-                        t,
-                        e.getX() - t.getWidth() / 2, e.getY() - t.getHeight() / 2,
-                        t.getWidth() / 2, t.getHeight() / 2,
-                        t.getWidth(), t.getHeight(),
+                        texture,
+                        entity.getX() - texture.getWidth() / 2, entity.getY() - texture.getHeight() / 2,
+                        texture.getWidth() / 2, texture.getHeight() / 2,
+                        texture.getWidth(), texture.getHeight(),
                         1, 1,
-                        e.getRotation() * radDeg,
+                        entity.getRotation() * radDeg,
                         0, 0,
-                        t.getWidth(), t.getHeight(),
+                        texture.getWidth(), texture.getHeight(),
                         false, false
                 );
             }

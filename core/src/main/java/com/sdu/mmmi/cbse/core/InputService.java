@@ -7,11 +7,11 @@
  */
 package com.sdu.mmmi.cbse.core;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import dk.sdu.mmmi.cbse.api.IInputService;
 import org.osgi.service.component.annotations.Component;
 
-import static com.badlogic.gdx.Gdx.input;
-import static com.badlogic.gdx.Input.Keys;
 
 @Component(service = IInputService.class)
 public class InputService implements IInputService {
@@ -20,11 +20,11 @@ public class InputService implements IInputService {
     public boolean keyDown(Key key) {
         switch (key) {
             case RIGHT:
-                return input.isKeyPressed(Keys.RIGHT);
+                return Gdx.input.isKeyPressed(Input.Keys.RIGHT);
             case LEFT:
-                return input.isKeyPressed(Keys.LEFT);
+                return Gdx.input.isKeyPressed(Input.Keys.LEFT);
             case UP:
-                return input.isKeyPressed(Keys.UP);
+                return Gdx.input.isKeyPressed(Input.Keys.UP);
             default:
                 return false;
         }

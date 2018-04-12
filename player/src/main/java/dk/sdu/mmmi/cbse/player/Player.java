@@ -68,12 +68,36 @@ public class Player implements IMoveAble, IEntity, ICollideAble {
         this.rotation = rotation;
     }
 
+    @Override
+    public void addRotation(float rotation) {
+        this.rotation += rotation;
+    }
+
+    @Override
+    public void subtractRotation(float rotation) {
+        this.rotation -= rotation;
+    }
+
+    @Override
+    public void translateX(float x) {
+        this.x += x;
+    }
+
+    @Override
+    public void translateY(float y) {
+        this.y += y;
+    }
+
     int getHealthPoints() {
         return healthPoints;
     }
 
     void setHealthPoints(int healthPoints) {
         this.healthPoints = healthPoints;
+    }
+
+    void reduceHealthPoints(int healthPoints) {
+        this.healthPoints -= healthPoints;
     }
 
     @Override

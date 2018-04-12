@@ -18,8 +18,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.random;
@@ -48,16 +46,16 @@ public class PlayerPlugin implements IPlugin {
     @Override
     @Activate
     public void start() {
-        Player player = new Player(ASSET_KEY, HEALTH_POINTS,
-                new MoveAbility(ACCELERATION, DECELERATION, MAX_SPEED, ROTATION_SPEED),
-                new CollisionAbility(DAMAGE, HIT_RADIUS));
+        var moveAbility = new MoveAbility(ACCELERATION, DECELERATION, MAX_SPEED, ROTATION_SPEED);
+        var collisionAbility = new CollisionAbility(DAMAGE, HIT_RADIUS);
+        var player = new Player(ASSET_KEY, HEALTH_POINTS, moveAbility, collisionAbility);
 
         player.setX(IWorld.WIDTH / 2);
         player.setY(IWorld.HEIGHT / 2);
         player.setRotation((float) (random() * 2 * PI));
         world.addEntity(player);
 
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(ASSET_PATH)) {
+        try (var stream = getClass().getClassLoader().getResourceAsStream(ASSET_PATH)) {
             assetManager.loadAsset(ASSET_KEY, stream.readAllBytes());
         } catch (IOException e) {
             e.printStackTrace();
@@ -68,7 +66,7 @@ public class PlayerPlugin implements IPlugin {
     @Deactivate
     public void stop() {
         assetManager.unloadAsset(ASSET_KEY);
-        List<Player> entities = world.getEntities(Player.class);
-        world.removeEntities(entities);
+        var players = world.getEntities(Player.class);
+        world.removeEntities(players);
     }
 }

@@ -49,4 +49,11 @@ public interface IEntity {
      */
     void setRotation(float rotation);
 
+    void addRotation(float rotation);
+
+    void subtractRotation(float rotation);
+
+    void translateX(float x);
+
+    void translateY(float y);
 }

@@ -23,9 +23,9 @@ public class MoveAbility implements IMoveAbility {
     private boolean moveForward;
 
     public MoveAbility(float acceleration,
-            float deceleration,
-            float maxSpeed,
-            float rotationSpeed) {
+                       float deceleration,
+                       float maxSpeed,
+                       float rotationSpeed) {
         this.acceleration = acceleration;
         this.deceleration = deceleration;
         this.maxSpeed = maxSpeed;
@@ -86,5 +86,15 @@ public class MoveAbility implements IMoveAbility {
 
     public void setMoveForward(boolean moveForward) {
         this.moveForward = moveForward;
+    }
+
+    @Override
+    public void translateDx(float dx) {
+        this.dx += dx;
+    }
+
+    @Override
+    public void translateDy(float dy) {
+        this.dy += dy;
     }
 }

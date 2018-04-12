@@ -7,12 +7,11 @@
  */
 package dk.sdu.mmmi.cbse.player;
 
-import dk.sdu.mmmi.cbse.api.IInputService;
-import dk.sdu.mmmi.cbse.api.IInputService.Key;
-import dk.sdu.mmmi.cbse.api.IProcessor;
-import dk.sdu.mmmi.cbse.api.IWorld;
+import dk.sdu.mmmi.cbse.api.*;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
+import static dk.sdu.mmmi.cbse.api.IInputService.Key.*;
 
 /**
  * @author Emil
@@ -27,33 +26,20 @@ public class PlayerProcessor implements IProcessor {
     private IInputService inputService;
 
     @Override
-    public void process(float dt) {
-        for (Player p : world.getEntities(Player.class)) {
-            p.getMoveAbility().setMoveForward(inputService.keyDown(Key.UP));
-            p.getMoveAbility().setTurnLeft(inputService.keyDown(Key.LEFT));
-            p.getMoveAbility().setTurnRight(inputService.keyDown(Key.RIGHT));
+    public void process(final float dt) {
+        for (var player : world.getEntities(Player.class)) {
 
-            p.getCollisionAbility().getCollisions().forEach(c -> p.setHealthPoints(
-                    p.getHealthPoints() - c.getCollisionAbility().getDamage()));
-            if (p.getHealthPoints() <= 0) {
-                world.removeEntity(p);
-            }
+            player.getMoveAbility().setMoveForward(inputService.keyDown(UP));
+            player.getMoveAbility().setTurnLeft(inputService.keyDown(LEFT));
+            player.getMoveAbility().setTurnRight(inputService.keyDown(RIGHT));
+
+            player.getCollisionAbility().getCollisions().stream()
+                    .map(ICollideAble::getCollisionAbility)
+                    .map(ICollisionAbility::getDamage)
+                    .forEach(player::reduceHealthPoints);
+
+            if (player.getHealthPoints() <= 0)
+                world.removeEntity(player);
         }
-    }
-
-    public void setWorld(IWorld world) {
-        this.world = world;
-    }
-
-    public void removeWorld(IWorld world) {
-        this.world = null;
-    }
-
-    public void setInputService(IInputService inputService) {
-        this.inputService = inputService;
-    }
-
-    public void removeInputService(IInputService inputService) {
-        this.inputService = null;
     }
 }

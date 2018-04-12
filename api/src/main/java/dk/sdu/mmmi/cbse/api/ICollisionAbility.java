@@ -13,6 +13,7 @@ package dk.sdu.mmmi.cbse.api;
 import java.util.Collection;
 
 public interface ICollisionAbility {
+
     int getHitRadius();
 
     int getDamage();

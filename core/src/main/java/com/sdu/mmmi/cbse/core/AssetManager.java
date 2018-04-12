@@ -31,9 +31,14 @@ public class AssetManager implements IAssetManager, ILocalAssetManager {
     }
 
     @Override
-    public void loadAsset(String key, byte[] data) {
-        Gdx.app.postRunnable(() -> assets.put(key, new Texture(new Pixmap(data, 0, data.length))));
-        System.out.println("loading asset: " + key + " length: " + data.length);
+    public void loadAsset(final String key, final byte[] data) {
+        if (data == null || data.length == 0)
+            throw new IllegalArgumentException("Invalid image file");
+        Gdx.app.postRunnable(() -> {
+            var pixmap = new Pixmap(data, 0, data.length);
+            var texture = new Texture(pixmap);
+            assets.put(key, texture);
+        });
     }
 
     @Override

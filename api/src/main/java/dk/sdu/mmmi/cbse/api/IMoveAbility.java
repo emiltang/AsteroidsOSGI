@@ -9,8 +9,8 @@ package dk.sdu.mmmi.cbse.api;
  */
 
 
-
 public interface IMoveAbility {
+
     float getRotationSpeed();
 
     float getMaxSpeed();
@@ -38,4 +38,8 @@ public interface IMoveAbility {
     boolean isMoveForward();
 
     void setMoveForward(boolean moveForward);
+
+    void translateDx(float dx);
+
+    void translateDy(float dy);
 }

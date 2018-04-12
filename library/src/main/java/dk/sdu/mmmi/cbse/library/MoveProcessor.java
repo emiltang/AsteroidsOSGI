@@ -7,7 +7,6 @@
  */
 package dk.sdu.mmmi.cbse.library;
 
-import dk.sdu.mmmi.cbse.api.IMoveAbility;
 import dk.sdu.mmmi.cbse.api.IMoveAble;
 import dk.sdu.mmmi.cbse.api.IProcessor;
 import dk.sdu.mmmi.cbse.api.IWorld;
@@ -26,45 +25,44 @@ public class MoveProcessor implements IProcessor {
     private IWorld world;
 
     @Override
-    public void process(float dt) {
-        for (IMoveAble m : world.getEntities(IMoveAble.class)) {
+    public void process(float deltaTime) {
+        for (var moveAble : world.getEntities(IMoveAble.class)) {
 
-            IMoveAbility mA = m.getMoveAbility();
+            var moveAbility = moveAble.getMoveAbility();
 
             // TL;DR: stuff moves
-            if (mA.isTurnLeft()) {
-                m.setRotation(m.getRotation() + mA.getRotationSpeed() * dt);
+            if (moveAbility.isTurnLeft())
+                moveAble.addRotation(moveAbility.getRotationSpeed() * deltaTime);
+
+            if (moveAbility.isTurnRight())
+                moveAble.subtractRotation(moveAbility.getRotationSpeed() * deltaTime);
+
+            if (moveAbility.isMoveForward()) {
+                moveAbility.translateDx((float) (cos(moveAble.getRotation()) * moveAbility.getAcceleration() * deltaTime));
+                moveAbility.translateDy((float) (sin(moveAble.getRotation()) * moveAbility.getAcceleration() * deltaTime));
             }
-            if (mA.isTurnRight()) {
-                m.setRotation(m.getRotation() - mA.getRotationSpeed() * dt);
+            var velocity = (float) sqrt(moveAbility.getDx() * moveAbility.getDx() + moveAbility.getDy() * moveAbility.getDy());
+            if (velocity > 0) {
+                moveAbility.translateDx(-(moveAbility.getDx() / velocity) * moveAbility.getDeceleration() * deltaTime);
+                moveAbility.translateDy(-(moveAbility.getDy() / velocity) * moveAbility.getDeceleration() * deltaTime);
+            }
+            if (velocity > moveAbility.getMaxSpeed()) {
+                moveAbility.setDx((moveAbility.getDx() / velocity) * moveAbility.getMaxSpeed());
+                moveAbility.setDy((moveAbility.getDy() / velocity) * moveAbility.getMaxSpeed());
             }
 
-            if (mA.isMoveForward()) {
-                mA.setDx((float) (mA.getDx() + cos(m.getRotation()) * mA.getAcceleration() * dt));
-                mA.setDy((float) (mA.getDy() + sin(m.getRotation()) * mA.getAcceleration() * dt));
-            }
-            float v = (float) sqrt(mA.getDx() * mA.getDx() + mA.getDy() * mA.getDy());
-            if (v > 0) {
-                mA.setDx(mA.getDx() - (mA.getDx() / v) * mA.getDeceleration() * dt);
-                mA.setDy(mA.getDy() - (mA.getDy() / v) * mA.getDeceleration() * dt);
-            }
-            if (v > mA.getMaxSpeed()) {
-                mA.setDx((mA.getDx() / v) * mA.getMaxSpeed());
-                mA.setDy((mA.getDy() / v) * mA.getMaxSpeed());
+            moveAble.translateX(moveAbility.getDx() * deltaTime);
+            if (moveAble.getX() > IWorld.WIDTH) {
+                moveAble.setX(0);
+            } else if (moveAble.getX() < 0) {
+                moveAble.setX(IWorld.WIDTH);
             }
 
-            m.setX(m.getX() + mA.getDx() * dt);
-            if (m.getX() > IWorld.WIDTH) {
-                m.setX(0);
-            } else if (m.getX() < 0) {
-                m.setX(IWorld.WIDTH);
-            }
-
-            m.setY(m.getY() + mA.getDy() * dt);
-            if (m.getY() > IWorld.HEIGHT) {
-                m.setY(0);
-            } else if (m.getY() < 0) {
-                m.setY(IWorld.HEIGHT);
+            moveAble.translateY(moveAbility.getDy() * deltaTime);
+            if (moveAble.getY() > IWorld.HEIGHT) {
+                moveAble.setY(0);
+            } else if (moveAble.getY() < 0) {
+                moveAble.setY(IWorld.HEIGHT);
             }
         }
     }
