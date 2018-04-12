@@ -20,12 +20,11 @@ import dk.sdu.mmmi.cbse.api.IWorld;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.badlogic.gdx.Gdx.*;
 import static com.badlogic.gdx.Input.Keys;
@@ -34,6 +33,7 @@ import static com.badlogic.gdx.graphics.GL20.GL_DEPTH_BUFFER_BIT;
 import static com.badlogic.gdx.math.MathUtils.radDeg;
 import static org.osgi.service.component.annotations.ReferenceCardinality.MULTIPLE;
 import static org.osgi.service.component.annotations.ReferencePolicy.DYNAMIC;
+import static org.osgi.service.component.annotations.ReferencePolicyOption.GREEDY;
 
 /**
  * @author Emil
@@ -41,11 +41,11 @@ import static org.osgi.service.component.annotations.ReferencePolicy.DYNAMIC;
 @Component(immediate = true)
 public class GameScreen implements ApplicationListener {
 
-    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
-    private List<IPlugin> plugins = new ArrayList<>();
+    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = GREEDY)
+    private volatile List<IPlugin> plugins = new CopyOnWriteArrayList<>();
 
-    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = ReferencePolicyOption.GREEDY)
-    private List<IProcessor> processors = new ArrayList<>();
+    @Reference(cardinality = MULTIPLE, policy = DYNAMIC, policyOption = GREEDY)
+    private volatile List<IProcessor> processors = new CopyOnWriteArrayList<>();
 
     @Reference
     private ILocalAssetManager assetManager;
@@ -114,11 +114,11 @@ public class GameScreen implements ApplicationListener {
 
         if (input.isKeyJustPressed(Keys.T)) {
             world.getEntities().forEach(iEntity -> System.out.println(
-                    "id: " + iEntity.hashCode()
-                            + "\nname: " + iEntity.getAsset()
-                            + "\nx: " + iEntity.getX()
-                            + "\ny: " + iEntity.getX()
-                            + "\ntype: " + iEntity.getClass()
+                    "id: " + iEntity.hashCode() + "\n"
+                            + "name: " + iEntity.getAsset() + "\n"
+                            + "x: " + iEntity.getX() + "\n"
+                            + "y: " + iEntity.getX() + "\n"
+                            + "type: " + iEntity.getClass() + "\n"
             ));
 //            Collection<String> aseets = assetManager.getAssets();
 //            if (aseets.isEmpty()) {
@@ -126,8 +126,11 @@ public class GameScreen implements ApplicationListener {
 //            } else {
 //                aseets.forEach(System.out::println);
 //            }
+            System.out.println("Processors");
             processors.forEach(System.out::println);
+            System.out.println("Plugins");
             plugins.forEach(System.out::println);
+
         }
     }
 
